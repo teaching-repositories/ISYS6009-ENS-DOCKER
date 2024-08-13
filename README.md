@@ -27,7 +27,6 @@ To use this Docker Compose file, you will need to have Docker and Docker Compose
 | wireshark      | Network protocol analyzer                              | `http://localhost:3000`   |
 | workstation    | Basic Alpine Linux workstation                         | `docker exec -it workstation sh`                       |
 | secutils    | Basic security utilities                         | `docker exec -it secutils sh`                       |
-
 | netshoot       | Network troubleshooting container                      | `docker exec -it netshoot sh`                       |
 | xfce-desktop   | Web-based XFCE desktop environment                     | `http://localhost:3010` (VNC) <br> `http://localhost:3011` (RDP) |
 | ldap           | OpenLDAP server                                        | `ldap://localhost:389`    |
