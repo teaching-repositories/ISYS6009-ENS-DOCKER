@@ -28,7 +28,7 @@ To use this Docker Compose file, you will need to have Docker and Docker Compose
 | workstation    | Basic Alpine Linux workstation                         | `docker exec -it workstation sh`                       |
 | secutils    | Basic security utilities                         | `docker exec -it secutils sh`                       |
 | netshoot       | Network troubleshooting container                      | `docker exec -it netshoot sh`                       |
-| xfce-desktop   | Web-based XFCE desktop environment                     | `http://localhost:3010` (VNC) <br> `http://localhost:3011` (RDP) |
+| ubuntu-desktop   | Ubuntu Ldxe desktop environment                     | `http://localhost:5900` (VNC) <br> `http://localhost:6080` (noVNC vis browser) |
 | ldap           | OpenLDAP server                                        | `ldap://localhost:389`    |
 | mail           | Email testing tool                                     | `http://localhost:8025`   |
 | mysql          | MySQL database server                                  | `mysql -h localhost -P 3306 -u user -p` |
