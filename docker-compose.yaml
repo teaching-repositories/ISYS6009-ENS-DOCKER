@@ -1,66 +1,143 @@
-version: '3.9'
 services:
-  proxy:
-    image: haproxy:1
-    container_name: proxy
-    restart: always
-    ports:
-      - 14500:14500
-    volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:Z
-    networks:
-      custom_network:
-        ipv4_address: 192.168.1.2
-
   wireshark:
-    image: "ffeldhaus/wireshark:0.5"
+    image: lscr.io/linuxserver/wireshark:latest
     container_name: wireshark
-    restart: always
-    privileged: true
-    network_mode: "service:proxy"
     environment:
-      - XPRA_PW=wireshark
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
     volumes:
-      - ./caps:/home/wireshark
-    networks:
-      custom_network:
-        ipv4_address: 192.168.1.3
-
-  xfce:
-    build: ./xfce
-    container_name: xfce
-    environment:
-      - XPRA_USERNAME=xfce
-      - XPRA_PW=xfce
-    networks:
-      custom_network:
-        ipv4_address: 192.168.1.4
-
-  juice:
-    image: bkimminich/juice-shop
+      - ./caps:/caps
     ports:
       - 3000:3000
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
     networks:
-      custom_network:
-        ipv4_address: 192.168.1.5
+      security_net:
+        ipv4_address: 172.20.0.2
 
   secutils:
     image: michaelborck/secutils
     container_name: secutils
-    command: tail -f /dev/null
     ports:
-      - "514:514/tcp"
-      - "514:514/udp"
-    volumes:
-      - ./data:/data
+      - "6080:80"
+    environment:
+      - USER=root
+      - PASSWORD=rootpassword
+      - SSL=false
+    command: ["/bin/sh", "-c", "/start.sh && exec /usr/bin/supervisord"]
     networks:
-      custom_network:
-        ipv4_address: 192.168.1.6
+      security_net:
+        ipv4_address: 172.20.0.4
+
+  workstation:
+    image: alpine:latest
+    container_name: workstation
+    command: /bin/sh -c "while true; do sleep 3600; done"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.10
+
+  netshoot:
+    image: nicolaka/netshoot
+    container_name: netshoot
+    command: tail -f /dev/null # Keeps the container running
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.11
+    cap_add:
+      - NET_ADMIN # Allows advanced networking operations
+    security_opt:
+      - seccomp:unconfined # Allows for more system calls, useful for some networking tools
+
+  xfce-desktop:
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    container_name: xfce-desktop
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SUBFOLDER=/ #optional
+      - KEYBOARD=en-us-qwerty #optional
+    volumes:
+      - ./config:/config
+    ports:
+      - 3010:3000 # VNC web interface
+      - 3011:3001 # RDP
+    shm_size: "1gb"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.12
+
+  ldap:
+    image: osixia/openldap
+    container_name: ldap
+    environment:
+      LDAP_ORGANISATION: "Example Organization"
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "389:389"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.6
+
+  mail:
+    image: mailhog/mailhog
+    container_name: mail
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.7
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+      MYSQL_DATABASE: "exampledb"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "userpassword"
+    ports:
+      - "3306:3306"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.8
+
+  telnet:
+    image: alpine:latest
+    container_name: telnet
+    command: sh -c "apk add --no-cache busybox-extras && /usr/sbin/telnetd -F"
+    ports:
+      - "23:23"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.9
+
+  juice-shop:
+    image: bkimminich/juice-shop
+    container_name: juice-shop
+    ports:
+      - 3012:3000
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.3
+
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: dvwa
+    ports:
+      - "8085:80"
+    networks:
+      security_net:
+        ipv4_address: 172.20.0.15
 
 networks:
-  custom_network:
-    driver: bridge
+  security_net:
     ipam:
-      driver: default
       config:
-        - subnet: 192.168.1.0/24
+        - subnet: 172.20.0.0/24
