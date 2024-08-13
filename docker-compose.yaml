@@ -1,0 +1,66 @@
+version: '3.9'
+services:
+  proxy:
+    image: haproxy:1
+    container_name: proxy
+    restart: always
+    ports:
+      - 14500:14500
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:Z
+    networks:
+      custom_network:
+        ipv4_address: 192.168.1.2
+
+  wireshark:
+    image: "ffeldhaus/wireshark:0.5"
+    container_name: wireshark
+    restart: always
+    privileged: true
+    network_mode: "service:proxy"
+    environment:
+      - XPRA_PW=wireshark
+    volumes:
+      - ./caps:/home/wireshark
+    networks:
+      custom_network:
+        ipv4_address: 192.168.1.3
+
+  xfce:
+    build: ./xfce
+    container_name: xfce
+    environment:
+      - XPRA_USERNAME=xfce
+      - XPRA_PW=xfce
+    networks:
+      custom_network:
+        ipv4_address: 192.168.1.4
+
+  juice:
+    image: bkimminich/juice-shop
+    ports:
+      - 3000:3000
+    networks:
+      custom_network:
+        ipv4_address: 192.168.1.5
+
+  secutils:
+    image: michaelborck/secutils
+    container_name: secutils
+    command: tail -f /dev/null
+    ports:
+      - "514:514/tcp"
+      - "514:514/udp"
+    volumes:
+      - ./data:/data
+    networks:
+      custom_network:
+        ipv4_address: 192.168.1.6
+
+networks:
+  custom_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.1.0/24
