@@ -13,7 +13,7 @@ Before you begin, ensure you have the following installed on your system:
 1. Clone this repository:
 
    ```
-   git clone https://github.com/traching-repositories/ISYS6009-ENS-Docker.git
+   git clone https://github.com/teaching-repositories/ISYS6009-ENS-Docker.git
    ```
 
 2. Navigate to the cloned repository:
